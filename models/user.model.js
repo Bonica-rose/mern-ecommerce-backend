@@ -27,16 +27,18 @@ const userSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: ["Admin", "User", "Guest"],
-            default: "User"
+            default: "Guest"
         },
         mobile: {
             type: String,
-            trim: true
+            trim: true,
+            maxlength: 10
         },
         address: {
             type: String,
             trim: true,
-            default: ""
+            default: "",
+            maxlength: 250
         },
         passwordChangedAt: { type: Date }
     },
@@ -48,15 +50,15 @@ userSchema.index({ role: 1 });
 
 // Hash password before saving
 userSchema.pre("save", async function () {
-    if (!this.isModified("password")) return next();
+    if (!this.isModified("password")) return;
 
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Compare password during login
-userSchema.methods.comparePassword = async function (password) {
-    return await bcrypt.compare(password, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
 module.exports = mongoose.model('User', userSchema)
