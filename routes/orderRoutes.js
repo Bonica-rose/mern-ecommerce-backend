@@ -1,0 +1,28 @@
+const express = require("express");
+const router = express.Router();
+
+const validationCheck = require('../middleware/validation');
+const protect = require('../middleware/authenticate');
+const restrictTo = require('../middleware/authorize');
+
+const orderValidator = require("../validators/orderValidator");
+
+const {
+    placeOrder,
+    getMyOrders,
+    getOrderById,
+    cancelOrder
+} = require("../controllers/orderController");
+
+router.use(protect); // Secure all order routes
+
+router.route("/")
+    .post(orderValidator, validationCheck, placeOrder)
+    .get(getMyOrders);    
+
+router.route("/cancel/:id").put(cancelOrder);
+router.route("/:id").get(getOrderById);
+
+
+
+module.exports = router;
