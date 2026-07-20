@@ -1,4 +1,4 @@
-const createProductValidator = (req, res, next) => {
+const productValidator = (req, res, next) => {
     
     const errors = [];
     const { name, description, price, category, stock, images } = req.body;
@@ -46,6 +46,4 @@ const createProductValidator = (req, res, next) => {
     next();
 };
 
-module.exports = {
-    createProductValidator
-}
+module.exports = productValidator;
