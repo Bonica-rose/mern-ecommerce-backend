@@ -1,5 +1,5 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 
 const {
     getUserProfile,
@@ -11,14 +11,14 @@ const {
     profileValidator, passwordValidator
 } = require("../validators/userValidator");
 
-const validationMiddleware = require('../middleware/validation')
-const protect = require('../middleware/authenticate')
-const restrictTo = require('../middleware/authorize')
+const validationCheck = require('../middleware/validation');
+const protect = require('../middleware/authenticate');
+const restrictTo = require('../middleware/authorize');
 
 router.use(protect);
 
 router.get('/profile', restrictTo('Admin','User'), getUserProfile);
-router.put('/profile', restrictTo('Admin','User'), profileValidator, validationMiddleware , updateUserProfile);
-router.put('/change-password', restrictTo('Admin','User'), passwordValidator, validationMiddleware, updateUserPassword);
+router.put('/profile', restrictTo('Admin','User'), profileValidator, validationCheck, updateUserProfile);
+router.put('/change-password', restrictTo('Admin','User'), passwordValidator, validationCheck, updateUserPassword);
 
 module.exports = router
