@@ -5,7 +5,7 @@ const validationCheck = require('../middleware/validation');
 const protect = require('../middleware/authenticate');
 const restrictTo = require('../middleware/authorize');
 
-const { createProductValidator } = require("../validators/productValidator");
+const productValidator = require("../validators/productValidator");
 
 const {
     getAllProducts,
@@ -18,13 +18,13 @@ const {
 
 router.route("/")
     .get(getAllProducts)
-    .post(protect, restrictTo("Admin"), createProductValidator, validationCheck, createProduct);
+    .post(protect, restrictTo("Admin"), productValidator, validationCheck, createProduct);
 
 router.get("/categories", getProductCategories)    
 
 router.route("/:id")
     .get(getProductById)
-    .put(protect, restrictTo("Admin"), updateProduct)
+    .put(protect, restrictTo("Admin"), productValidator, validationCheck, updateProduct)
     .delete(protect, restrictTo("Admin"), deleteProduct);
 
 module.exports = router;
