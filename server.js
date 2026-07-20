@@ -11,6 +11,7 @@ const notFound = require('./middleware/notFound');
 const authRoutes = require("./routes/authRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.get('/', (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use('/api/user', userProfileRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/order', orderRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
