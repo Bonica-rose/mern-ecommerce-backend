@@ -9,6 +9,7 @@ const errorHandler = require('./middleware/errorHandler');
 const notFound = require('./middleware/notFound');
 
 const authRoutes = require("./routes/authRoutes");
+const userProfileRoutes = require("./routes/userProfileRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 })
 
 app.use("/api/auth", authRoutes);
+app.use('/api/user', userProfileRoutes)
 
 app.use(notFound);
 app.use(errorHandler);
