@@ -1,6 +1,7 @@
 const express = require("express");
-const router = express.Router();
+const productRouter = express.Router();
 
+const upload = require('../middleware/multer');
 const validationCheck = require('../middleware/validation');
 const protect = require('../middleware/authenticate');
 const restrictTo = require('../middleware/authorize');
@@ -16,15 +17,15 @@ const {
     deleteProduct
 } = require("../controllers/productController");
 
-router.route("/")
+productRouter.route("/")
     .get(getAllProducts)
-    .post(protect, restrictTo("Admin"), productValidator, validationCheck, createProduct);
+    .post(protect, restrictTo("Admin"), productValidator, validationCheck, upload.single('images'), createProduct);
 
-router.get("/categories", getProductCategories)    
+productRouter.get("/categories", getProductCategories)    
 
-router.route("/:id")
+productRouter.route("/:id")
     .get(getProductById)
     .put(protect, restrictTo("Admin"), productValidator, validationCheck, updateProduct)
     .delete(protect, restrictTo("Admin"), deleteProduct);
 
-module.exports = router;
+module.exports = productRouter;

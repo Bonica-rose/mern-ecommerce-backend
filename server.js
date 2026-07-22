@@ -16,19 +16,17 @@ const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
-// const allowedOrigins = [
-//     "http://localhost:5173",
-//     process.env.FRONTEND_URL
-// ];
-// app.use(cors({
-//     origin: allowedOrigins,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     credentials: true
-// }));
-app.use(cors())
+// middlewares
+app.use(cors({
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+//MongoDB Connection
 connectDB();
 app.get('/', (req, res) => { 
     res.send('<h1>Backend application for an ecommerce application using the MERN Stack</h1>')
@@ -46,5 +44,4 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is listening to the port ${PORT}`);
-    console.log(`http://localhost:${PORT}`);
 });

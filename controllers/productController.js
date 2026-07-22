@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Product = require("../models/product.model");
+const uploadToCloudinary = require('../Utilities/imageUpload')
 
 const getAllProducts = async (req, res) => {
     try {
@@ -91,8 +92,8 @@ const getAllProducts = async (req, res) => {
             Product.find(filter)
                 .sort(sortOption)
                 .skip(skip)
-                .limit(pageSize)
-                .lean(),
+                .limit(pageSize),
+                // .lean(),
 
             Product.countDocuments(filter),
         ]);
@@ -131,13 +132,17 @@ const getProductById = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
+        const { name, description, price, category, stock } = req.body;
+
+        const cloudinaryResponse = await uploadToCloudinary(req.file.path);
+
         const newProduct = await Product.create({
             name,
             description,
             price,
             category,
             stock,
-            images
+            image: cloudinaryResponse
         });
         return res.status(201).json({ success: true, product: newProduct });
     } catch (error) {
@@ -164,11 +169,18 @@ const getProductCategories = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
+        let imageUrl;
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ success: false, message: "Invalid product id." });
         }
+
+        if (req.file) {
+            const cloudinaryRes = await uploadToCloudinary(req.file.path);
+            imageUrl = cloudinaryRes
+        }
+
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id,
-            { name, description, price, category, stock, images },
+            { name, description, price, category, stock, image: imageUrl },
             { new: true, runValidators: true }
         );
         if (!updatedProduct) {
