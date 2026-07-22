@@ -89,15 +89,24 @@ const placeOrder = async (req, res) => {
 const getOrderById = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const userId = req.user._id;        
+        const userId = req.user._id;  
+        const userRole = req.user.role;
 
-        const order = await Order.findOne({ _id: orderId, user: userId, isDeleted: false })
+        const order = await Order.findOne({ _id: orderId, isDeleted: false })
             .populate('items.product', "name images");
         
         if (!order) {
             return res.status(404).json({
                 success: false,
                 message: 'Order not found'
+            });
+        }
+
+        // Block if it's NOT the owner AND NOT an Admin
+        if (order.user.toString() !== userId.toString() && userRole !== "Admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized access to this order record"
             });
         }
 

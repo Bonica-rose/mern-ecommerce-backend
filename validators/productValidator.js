@@ -1,7 +1,7 @@
 const productValidator = (req, res, next) => {
     
     const errors = [];
-    const { name, description, price, category, stock, images } = req.body;
+    const { name, description, price, category, stock } = req.body;
 
     // Name 
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -32,15 +32,9 @@ const productValidator = (req, res, next) => {
         errors.push({ field: "stock", message: "Stock must be a positive whole integer" });
     }
 
-    // Array Images Checklist
-    // if (!images || !Array.isArray(images) || images.length === 0) {
-    //     errors.push({ field: "images", message: "At least one product image URL is required" });
-    // } else {
-    //     const structuralCheck = images.every(img => typeof img === "string" && img.trim() !== "");
-    //     if (!structuralCheck) {
-    //         errors.push({ field: "images", message: "All image links must be valid strings" });
-    //     }
-    // }
+    if (!req.file) {
+        errors.push({ field: "image", message: "Image is required" });
+    }
 
     req.validationErrors = errors;
     next();
