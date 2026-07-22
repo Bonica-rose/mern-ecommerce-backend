@@ -1,5 +1,6 @@
-const Order = require('../models/order.model')
-const Product = require('../models/product.model')
+const Order = require('../models/order.model');
+const Product = require('../models/product.model');
+const Cart = require("../models/cart.model");
 
 const getMyOrders = async (req, res) => {
     try {
@@ -27,13 +28,23 @@ const getMyOrders = async (req, res) => {
 const placeOrder = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { items, shippingAddress } = req.body;
+        const { shippingAddress } = req.body;
 
         let orderedItems = [];
         let calculatedTotal = 0;
 
-        for (const item of items) {
-            const product = await Product.findById(item.product);
+        const cart = await Cart.findOne({ user: userId }).populate("items.product");
+
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Your cart is empty.",
+            });
+        }
+
+        for (const item of cart.items) {
+            // const product = await Product.findById(item.product);
+            const product = item.product;
             if (!product) {
                 return res.status(404).json({
                     success: false,
@@ -71,6 +82,11 @@ const placeOrder = async (req, res) => {
         });
 
         const savedOrder = await newOrder.save();
+
+        await savedOrder.populate("items.product", "name images");
+
+        cart.items = [];
+        await cart.save();
 
         res.status(201).json({
             success: true,
