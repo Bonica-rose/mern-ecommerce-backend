@@ -23,12 +23,16 @@ const buildCartResponse = (cart) => {
     };
 };
 
+const getCartQuery = (req) => {
+    return req.user
+        ? { user: req.user._id }
+        : { guestId: req.guestId };
+};
+
 /* GET /api/cart */
 const getCart = async (req, res) => {
     try {
-        let cart = await Cart.findOne({
-            user: req.user._id,
-        }).populate(
+        let cart = await Cart.findOne(getCartQuery(req)).populate(
             "items.product",
             "name price image stock category"
         );
@@ -79,13 +83,12 @@ const addToCart = async (req, res) => {
             });
         }
 
-        let cart = await Cart.findOne({
-            user: req.user._id,
-        });
+        let cart = await Cart.findOne(getCartQuery(req));
 
         if (!cart) {
             cart = await Cart.create({
-                user: req.user._id,
+                user: req.user ? req.user._id : null,
+                guestId: req.user ? null : req.guestId,
                 items: [],
             });
         }
@@ -156,9 +159,7 @@ const updateCartQty = async (req, res) => {
             });
         }
 
-        const cart = await Cart.findOne({
-            user: req.user._id,
-        });
+        const cart = await Cart.findOne(getCartQuery(req));
 
         if (!cart) {
             return res.status(404).json({
@@ -202,9 +203,7 @@ const removeCartItem = async (req, res) => {
     try {
         const { productId } = req.params;
 
-        const cart = await Cart.findOne({
-            user: req.user._id,
-        });
+        const cart = await Cart.findOne(getCartQuery(req));
 
         if (!cart) {
             return res.status(404).json({
@@ -237,9 +236,7 @@ const removeCartItem = async (req, res) => {
 /* DELETE /api/cart */
 const clearCart = async (req, res) => {
     try {
-        const cart = await Cart.findOne({
-            user: req.user._id,
-        });
+        const cart = await Cart.findOne(getCartQuery(req));
 
         if (!cart) {
             return res.status(404).json({

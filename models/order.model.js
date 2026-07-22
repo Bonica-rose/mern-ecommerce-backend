@@ -19,6 +19,7 @@ const orderSchema = new mongoose.Schema(
             enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"], 
             default: "Pending" 
         },
+        paymentMethod: { type: String, enum: ["COD", "Stripe"], default: "COD"},
         paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
         isDeleted: { type: Boolean, default: false },
         deletedAt: { type: Date, default: null}

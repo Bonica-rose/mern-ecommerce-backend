@@ -6,7 +6,7 @@ const getMyOrders = async (req, res) => {
     try {
         const userId = req.user._id;
         const orders = await Order.find({ user: userId, isDeleted: false })
-            .populate("items.product", "name images")
+            .populate("items.product", "name images price")
             .sort({ createdAt: -1 }) // Latest orders first
             .lean();
 
@@ -129,7 +129,7 @@ const getOrderById = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Order found',
-            data: order,
+            order,
         });
         
     } catch (error) {

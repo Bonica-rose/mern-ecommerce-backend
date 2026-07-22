@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const Cart = require("../models/cart.model");
 const jwt = require("jsonwebtoken");
 
 const generateToken = (user) => {
@@ -8,6 +9,59 @@ const generateToken = (user) => {
         { expiresIn: process.env.JWT_EXPIRY || "1d" }
     )
 }
+
+const mergeGuestCart = async (req, res, userId) => {
+    const guestId = req.cookies.guestId;
+
+    if (!guestId) {
+        return;
+    }
+
+    const guestCart = await Cart.findOne({ guestId });
+
+    if (!guestCart) {
+        return;
+    }
+
+    let userCart = await Cart.findOne({ user: userId });
+
+    if (!userCart) {
+        userCart = await Cart.create({
+            user: userId,
+            items: [],
+        });
+    }
+
+    // Merge guest items into user cart
+    for (const guestItem of guestCart.items) {
+        const existingItem = userCart.items.find(
+            (item) =>
+                item.product.toString() ===
+                guestItem.product.toString()
+        );
+
+        if (existingItem) {
+            existingItem.quantity += guestItem.quantity;
+        } else {
+            userCart.items.push({
+                product: guestItem.product,
+                quantity: guestItem.quantity,
+            });
+        }
+    }
+
+    await userCart.save();
+
+    // Delete guest cart
+    await guestCart.deleteOne();
+
+    // Remove guest cookie
+    res.clearCookie("guestId", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+    });
+};
 
 const registerUser = async (req, res) => {
     try {
@@ -71,6 +125,9 @@ const loginUser = async (req, res) => {
 
         // Generate JWT token
         const token = generateToken(user);
+
+        // Merge guest cart into user's cart
+        await mergeGuestCart(req, res, user._id);
 
         res.cookie("token", token, {
             httpOnly: true,

@@ -9,12 +9,16 @@ const {
     clearCart,
 } = require("../controllers/cartController");
 
-const protect = require("../middleware/authenticate");
+const optionalAuth = require("../middleware/optionalAuth");
+const guestCheck = require("../middleware/guestSession");
 
-cartRouter.get("/", protect, getCart);
-cartRouter.post("/", protect, addToCart);
-cartRouter.patch("/:productId", protect, updateCartQty);
-cartRouter.delete("/:productId", protect, removeCartItem);
-cartRouter.delete("/", protect, clearCart);
+cartRouter.use(optionalAuth);
+cartRouter.use(guestCheck);
+
+cartRouter.get("/", getCart);
+cartRouter.post("/", addToCart);
+cartRouter.patch("/:productId", updateCartQty);
+cartRouter.delete("/:productId", removeCartItem);
+cartRouter.delete("/", clearCart);
 
 module.exports = cartRouter;

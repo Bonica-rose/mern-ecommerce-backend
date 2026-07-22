@@ -16,9 +16,8 @@ const {
 
 router.use(protect); // Secure all order routes
 
-router.route("/")
-    .post(orderValidator, validationCheck, placeOrder)
-    .get(getMyOrders);    
+router.route("/").post(orderValidator, validationCheck, placeOrder)
+router.route("/my-orders").get(getMyOrders);    
 
 router.route("/cancel/:id").put(cancelOrder);
 router.route("/:id").get(getOrderById);
