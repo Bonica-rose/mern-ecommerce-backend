@@ -11,23 +11,25 @@ const {
     getAllUsersAdmin,
     deleteUserAdmin,
     getAllOrdersAdmin,
+    getOrderByIdAdmin,
     updateOrderStatusAdmin
 } = require("../controllers/adminController");
+
+const { getDashboard } = require('../controllers/dashboardController')
 
 router.use(protect);
 router.use(restrictTo("Admin"));
 
-// --- User Management Endpoints ---
-router.route("/users")
-    .get(getAllUsersAdmin);
+// - Dashboard Endpoints ---
+router.route("/dashboard").get(getDashboard);
 
-router.route("/users/:id")
-    .delete(deleteUserAdmin);
+// --- User Management Endpoints ---
+router.route("/users").get(getAllUsersAdmin);
+router.route("/users/:id").delete(deleteUserAdmin);
 
 // --- Order  Management Endpoints ---
-router.route("/orders")
-    .get(getAllOrdersAdmin);
-
+router.route("/orders").get(getAllOrdersAdmin);
+router.route("/orders/:id").get(getOrderByIdAdmin);
 router.route("/orders/:id")
     .put(orderStatusValidator, validationCheck, updateOrderStatusAdmin);
 

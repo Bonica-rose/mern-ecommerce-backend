@@ -17,15 +17,15 @@ const {
     deleteProduct
 } = require("../controllers/productController");
 
+productRouter.route("/").get(getAllProducts);
 productRouter.route("/")
-    .get(getAllProducts)
-    .post(protect, restrictTo("Admin"), productValidator, validationCheck, upload.single('images'), createProduct);
+    .post(protect, restrictTo("Admin"), upload.single("image"), productValidator, validationCheck, createProduct);
 
-productRouter.get("/categories", getProductCategories)    
+productRouter.route("/categories").get(getProductCategories)    
 
 productRouter.route("/:id")
     .get(getProductById)
-    .put(protect, restrictTo("Admin"), productValidator, validationCheck, updateProduct)
+    .put(protect, restrictTo("Admin"), upload.single('image'), productValidator, validationCheck, updateProduct)
     .delete(protect, restrictTo("Admin"), deleteProduct);
 
 module.exports = productRouter;
