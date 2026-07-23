@@ -20,7 +20,7 @@ router.route("/").post(orderValidator, validationCheck, placeOrder)
 router.route("/my-orders").get(getMyOrders);    
 
 router.route("/cancel/:id").put(cancelOrder);
-router.route("/:id").get(getOrderById);
+router.get("/:id", restrictTo('User'), getOrderById);
 
 
 

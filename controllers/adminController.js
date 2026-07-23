@@ -64,16 +64,72 @@ const getAllOrdersAdmin = async (req, res) => {
     try {
         const orders = await Order.aggregate([
             { $match: { isDeleted: false } },
-            { $sort: { createdAt: -1 } }, 
+            { $sort: { createdAt: -1 } },
+
+            // User lookup
             {
                 $lookup: {
-                    from: "users", 
+                    from: "users",
                     localField: "user",
                     foreignField: "_id",
                     as: "user"
                 }
             },
-            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Product lookup
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "items.product",
+                    foreignField: "_id",
+                    as: "products"
+                }
+            },
+
+            // Replace product ObjectId with product object
+            {
+                $addFields: {
+                    items: {
+                        $map: {
+                            input: "$items",
+                            as: "item",
+                            in: {
+                                _id: "$$item._id",
+                                quantity: "$$item.quantity",
+                                price: "$$item.price",
+                                product: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: "$products",
+                                                as: "product",
+                                                cond: {
+                                                    $eq: [
+                                                        "$$product._id",
+                                                        "$$item.product"
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            {
+                $unset: "products"
+            },
+
             {
                 $project: {
                     _id: 1,
@@ -81,9 +137,10 @@ const getAllOrdersAdmin = async (req, res) => {
                     totalAmount: 1,
                     orderStatus: 1,
                     paymentStatus: 1,
+                    paymentMethod: 1,
                     shippingAddress: 1,
                     createdAt: 1,
-                    // Conditional checks prevent crashes if a user was deleted
+
                     user: {
                         $cond: {
                             if: { $ifNull: ["$user", false] },
@@ -92,12 +149,14 @@ const getAllOrdersAdmin = async (req, res) => {
                                 name: "$user.name",
                                 email: "$user.email"
                             },
-                            else: { message: "Account deleted" }
+                            else: {
+                                message: "Account deleted"
+                            }
                         }
                     }
                 }
             }
-        ]); 
+        ]);
 
         return res.status(200).json({
             success: true,
@@ -106,6 +165,45 @@ const getAllOrdersAdmin = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/* Get Specific Order */
+const getOrderByIdAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const order = await Order.findOne({
+            _id: id,
+            isDeleted: false,
+        })
+            .populate("user", "name email")
+            .populate("items.product", "name price image");
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            order,
+        });
+    } catch (error) {
+        // Invalid ObjectId
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order id",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 
@@ -163,15 +261,14 @@ const updateOrderStatusAdmin = async (req, res) => {
 
         await order.save();
 
+        const updatedOrder = await Order.findById(order._id)
+            .populate("user", "name email")
+            .populate("items.product", "name price image");
+
         return res.status(200).json({
             success: true,
             message: 'Order status modified successfully',
-            order: {
-                _id: order._id,
-                orderStatus: order.orderStatus,
-                paymentStatus: order.paymentStatus,
-                totalAmount: order.totalAmount
-            }
+            order: updatedOrder
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -182,5 +279,6 @@ module.exports = {
     getAllUsersAdmin,
     deleteUserAdmin,
     getAllOrdersAdmin,
+    getOrderByIdAdmin,
     updateOrderStatusAdmin
 };

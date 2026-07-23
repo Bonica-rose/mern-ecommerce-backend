@@ -1,7 +1,17 @@
 const productValidator = (req, res, next) => {
+
+    // console.log("BODY:", req.body);
     
     const errors = [];
-    const { name, description, price, category, stock } = req.body;
+    const {
+        name,
+        description,
+        category
+    } = req.body;
+
+    const price = Number(req.body.price);
+    const stock = Number(req.body.stock);
+    const ratings = Number(req.body.ratings);
 
     // Name 
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -17,22 +27,41 @@ const productValidator = (req, res, next) => {
         errors.push({ field: "description", message: "Description must be at least 10 characters long" });
     }
 
-    // Price 
-    if (price === undefined || price === null || typeof price !== "number" || price < 0) {
-        errors.push({ field: "price", message: "Price must be a valid positive number" });
-    }
-
     // Category
     if (!category || typeof category !== "string" || category.trim() === "") {
         errors.push({ field: "category", message: "Category is required" });
     }
 
-    // Stock 
-    if (stock === undefined || stock === null || !Number.isInteger(stock) || stock < 0) {
-        errors.push({ field: "stock", message: "Stock must be a positive whole integer" });
+    // Price
+    if (Number.isNaN(price) || price < 0) {
+        errors.push({
+            field: "price",
+            message: "Price must be a valid positive number",
+        });
     }
 
-    if (!req.file) {
+    // Stock
+    if (!Number.isInteger(stock) || stock < 0) {
+        errors.push({
+            field: "stock",
+            message: "Stock must be a positive whole integer",
+        });
+    }
+
+    // Ratings (optional)
+    if (
+        req.body.ratings !== undefined &&
+        (Number.isNaN(ratings) || ratings < 0 || ratings > 5)
+    ) {
+        errors.push({
+            field: "ratings",
+            message: "Ratings must be between 0 and 5",
+        });
+    }
+
+    // console.log(req.file);    
+
+    if (req.method == 'POST' && !req.file) {
         errors.push({ field: "image", message: "Image is required" });
     }
 

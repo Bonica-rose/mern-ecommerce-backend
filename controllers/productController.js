@@ -92,8 +92,8 @@ const getAllProducts = async (req, res) => {
             Product.find(filter)
                 .sort(sortOption)
                 .skip(skip)
-                .limit(pageSize),
-                // .lean(),
+                .limit(pageSize)
+                .lean(),
 
             Product.countDocuments(filter),
         ]);
@@ -132,9 +132,10 @@ const getProductById = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
-        const { name, description, price, category, stock } = req.body;
-
+        const { name, description, price, category, stock, ratings } = req.body;
+        
         const cloudinaryResponse = await uploadToCloudinary(req.file.path);
+        console.log(cloudinaryResponse);
 
         const newProduct = await Product.create({
             name,
@@ -142,6 +143,7 @@ const createProduct = async (req, res) => {
             price,
             category,
             stock,
+            ratings,
             image: cloudinaryResponse
         });
         return res.status(201).json({ success: true, product: newProduct });
@@ -169,19 +171,26 @@ const getProductCategories = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        let imageUrl;
+        const { name, description, price, category, stock, ratings } = req.body;
+        
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ success: false, message: "Invalid product id." });
         }
 
+        const updateData = { name, description, price, category, stock, ratings } 
+
         if (req.file) {
             const cloudinaryRes = await uploadToCloudinary(req.file.path);
-            imageUrl = cloudinaryRes
+            updateData.image = cloudinaryRes;
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id,
-            { name, description, price, category, stock, image: imageUrl },
-            { new: true, runValidators: true }
+            updateData,
+            {
+                // new: true,
+                returnDocument: "after",
+                runValidators: true
+            }
         );
         if (!updatedProduct) {
             return res.status(404).json({ success: false, message: "Product not found" });
