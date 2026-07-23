@@ -59,7 +59,7 @@ const mergeGuestCart = async (req, res, userId) => {
     res.clearCookie("guestId", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
     });
 };
 
@@ -132,7 +132,7 @@ const loginUser = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", // true in production with HTTPS
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000 // 1 day = 86,400,000 ms
         });
 
@@ -158,7 +158,7 @@ const logoutUser = (req, res) => {
     res.clearCookie("token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax"
+        sameSite: "none"
     });
 
     res.status(200).json({

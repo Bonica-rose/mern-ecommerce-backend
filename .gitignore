@@ -1,4 +1,20 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-.vscode/*
+.env.*
+
+# Logs
+*.log
+
+# Uploaded files (if any)
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
+Thumbs.db
