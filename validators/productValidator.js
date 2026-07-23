@@ -16,8 +16,8 @@ const productValidator = (req, res, next) => {
     // Name 
     if (!name || typeof name !== "string" || name.trim() === "") {
         errors.push({ field: "name", message: "Product name is required" });
-    } else if (name.trim().length < 3 || name.trim().length > 25) {
-        errors.push({ field: "name", message: "Name must be between 3 and 25 characters" });
+    } else if (name.trim().length < 3 || name.trim().length > 50) {
+        errors.push({ field: "name", message: "Name must be between 3 and 50 characters" });
     }
 
     // Description

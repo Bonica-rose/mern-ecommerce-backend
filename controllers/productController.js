@@ -135,7 +135,7 @@ const createProduct = async (req, res) => {
         const { name, description, price, category, stock, ratings } = req.body;
         
         const cloudinaryResponse = await uploadToCloudinary(req.file.path);
-        console.log(cloudinaryResponse);
+        // console.log(cloudinaryResponse);
 
         const newProduct = await Product.create({
             name,
